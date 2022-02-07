@@ -1,4 +1,4 @@
-# Secure Multi-party Computation System
+# SMCompiler
 
 ## Introduction
 
