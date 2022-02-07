@@ -1,6 +1,6 @@
 Public Repo for CS-523
 ======================
 
-Here are the two projects the students needs to complete for the course CS-523.
+The repo contains material for the two projects the students need to complete for in the EPFL CS-523.
 
 
