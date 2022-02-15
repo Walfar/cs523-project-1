@@ -1,4 +1,6 @@
-# SMCompiler
+# Secure Multi-party Computation System
+
+This README is available in two formats: README.md and README.html .
 
 ## Introduction
 

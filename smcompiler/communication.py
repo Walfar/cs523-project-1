@@ -12,13 +12,13 @@ import requests
 
 def sanitize_url_param(url_param: Union[bytes, str]) -> str:
     """
-    Sanitize an URL parameter to be URL-safe.
+    Sanitize URL parameter to be URL-safe.
     """
     if isinstance(url_param, bytes):
         # Mypy "dislikes" variable redefinition.
         url_param = url_param.decode("ASCII") # type: ignore
 
-    # "%2F" are indistinguishable from "/" for some servers.
+    # %2F is indistinguishable from / due to WSGI standard.
     url_param = url_param.replace(r"%2F", "_").replace(r"%2f", "_")
 
     return url_param.replace("/", "_").replace("+", "-") # type: ignore
