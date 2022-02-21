@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 # Identical parts between client and server.
 # Add Tor repo and install necessary packages.
@@ -9,8 +9,8 @@ apt-utils \
 apt-transport-https \
 curl \
 gnupg2 && \
-echo 'deb https://deb.torproject.org/torproject.org buster main' >> /etc/apt/sources.list.d/tor.list && \
-curl -s https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | apt-key add - && \
+curl -sSL https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null && \
+echo "deb [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org bullseye main" > /etc/apt/sources.list.d/tor.list && \
 apt-get update && \
 apt-get install -y \
 deb.torproject.org-keyring \
@@ -40,7 +40,8 @@ RUN pip3 install Flask Flask-SQLAlchemy jsonpickle petrelic PySocks pylint pytes
 # Add server directory.
 RUN mkdir /server
 
-COPY ./etc /etc
+COPY ./etc /tmp/etc
+RUN cp -R /tmp/etc/* /etc/ && rm -rf /tmp/etc
 
 # Volume to store hidden service stuff.
 VOLUME  ["/var/lib/tor/"]
