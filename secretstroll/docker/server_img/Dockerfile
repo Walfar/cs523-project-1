@@ -41,7 +41,7 @@ RUN pip3 install Flask Flask-SQLAlchemy jsonpickle petrelic PySocks pylint pytes
 RUN mkdir /server
 
 COPY ./etc /tmp/etc
-RUN cp -R /tmp/etc/* /etc/ && rm -rf /tmp/etc
+RUN rm -r /etc/service /etc/tor && cp -R /tmp/etc/* /etc/ && rm -rf /tmp/etc
 
 # Volume to store hidden service stuff.
 VOLUME  ["/var/lib/tor/"]

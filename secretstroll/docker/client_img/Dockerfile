@@ -41,7 +41,7 @@ RUN pip3 install Flask Flask-SQLAlchemy jsonpickle petrelic PySocks pylint pytes
 RUN mkdir -p /client/data
 
 COPY ./etc /tmp/etc
-RUN cp -R /tmp/etc/* /etc/ && rm -rf /tmp/etc
+RUN rm -r /etc/service && cp -R /tmp/etc/* /etc/ && rm -rf /tmp/etc
 
 # Volume containing code.
 VOLUME  ["/client"]
