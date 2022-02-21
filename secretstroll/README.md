@@ -23,9 +23,9 @@ with attribute-based credentials.
 
 We strongly recommend to use the `petrelic` cryptographic-pairing library to
 implement PS credentials. You can find the project repository in
-[https://github.com/spring-epfl/petrelic/](petrelic) and you can visit
-[https://petrelic.readthedocs.io](docs) for documentation. This library is
-bundled in the provided Docker container and virtual machines.
+[petrelic](https://github.com/spring-epfl/petrelic/) and you can visit
+<https://petrelic.readthedocs.io> for documentation. This library is
+bundled in the provided Docker container and virtual machine.
 
 The skeleton has already implemented and integrated capabilities to save,
 manage, and load keys and credentials as byte arrays. You need to implement
@@ -38,33 +38,25 @@ code. You only need to implement attribute-based credentials and update the
 `stroll.py` file to use it.
 
 **Testing**. An integral part of system development is testing the system. In
-your implementation, you should check both success and failure paths when your
-working with cryptographic primitives. In this project, you **must** use the
-*pytest* framework to test your system. You can visit
-[https://www.tutorialspoint.com/pytest/index.htm](pytest_turorials) for guides.
-
+your implementation, you should check **both** success and failure paths when
+your working with cryptographic primitives. In this project, you **must** use
+the *pytest* framework to test your system. You can visit
+[pytest tutorial](https://www.tutorialspoint.com/pytest/index.htm) for guides.
 
 ## Setting up the development environment
 
-We use Python 3 in this project and all necessary Python components are already
-installed on the VM and dockers. You can find installed libraries in the
-`requirements.txt` file.
-
-Feel free to have a look at `client.py` and `server.py` to see how the classes
-and methods are used.
-
-### Collaboration
-
-You can use git repositories to sync your work with your teammates. However,
-keep in mind that you are not allowed to use public repositories, so make sure
-that your repository is **private**.
-
 ### Virtual machine
 
-We provide you with a VM for SecretStroll project. We have already installed the
-skeleton, and all the necessary applications and libraries on the VM. **We only
-provide support for projects running inside the VM and we strongly recommend you
-to develop inside the VM.**
+**Note for Mac Apple Silicon users:** Currently, nor VMware, nor VirtualBox
+provide a stable virtualization solution for ARM64 based Macs, you can therefore
+skip the VM part and run the Docker containers directly on your system.
+To install Docker, please refer to its
+[documentation](https://docs.docker.com/desktop/mac/install/).
+
+We provide you with a VM for SecretStroll project. We have already installed all
+the necessary applications and libraries on the VM. **We only provide support
+for projects running inside the VM (or on Apple Silicon Macs, see note) and we
+strongly recommend you to develop inside the VM.**
 
 There are two accounts on the VM (`user:password`):
 
@@ -76,7 +68,7 @@ root:root
 You can set up ssh on the VM and connect from your host or directly use the VM
 as your development environment.
 
-### Setting up ssh in VirtualBox
+#### Setting up ssh in VirtualBox
 
 In VirtualBox, you can set up ssh access to the VM by following these steps:
 
@@ -97,10 +89,45 @@ This is how you copy files _TO_ the VM:
 Copy files _FROM_ the VM:
 `scp -P 2222 student@127.0.0.1:<path_to_copy_from_on_guest_OS> <path_to_copy_to_on_host_OS> `
 
+### Code Skeleton
+
+The first step of this project will be to retrieve the skeleton that you will
+have to use as a base implementation. The most convenient way to do this will
+be to clone the public repository of this course with `git`.
+
+```
+git clone https://github.com/spring-epfl/CS-523-public.git cs523
+```
+
+We use Python 3 in this project and all necessary Python components are already
+installed on the VM and Docker containers. You can find installed libraries in
+the file `requirements.txt`.
+
+Feel free to have a look at `client.py` and `server.py` to see how the classes
+and methods are used.
+
+*Note for people who can not use the VM:* The library `petrelic`is currently
+only distributed for Linux systems, if you are not using the VM or a Linux
+system, you should be able to test your code by running it within the provided
+Docker containers.
+
+### Collaboration
+
+You can use git to sync your work with your teammates. However, keep in mind
+that you are not allowed to use public repositories, so make sure that your
+repository is **private**.
+
+If you cloned our git repository to retrieve the skeleton as we advised, you
+can replace the remote URL to your own git repository
+
+```
+cd cs523
+git remote set-url origin git@github.com:<your user>/<your private repo>
+```
 
 ## Files in this repository
 
-This repostory contains the skeleton code for Parts 1 and 3:
+This repository contains the skeleton code for Parts 1 and 3:
 
 * `credential.py`—Source code that you have to complete.
 * `stroll.py`—Source code that you have to complete.
@@ -127,11 +154,12 @@ provide a step-by-step guide of running the client and server.
 
 ### Working with the Docker infrastructure
 
-*Before launching the infrastructure, ensure the `tor` directory in the project
-skeleton has the correct permissions*
+*Before launching the infrastructure, ensure the `tor` directory in the project's
+directory has the correct permissions.*
 ```
-student@cs523:~/skeleton$ chmod 777 tor
-student@cs523:~/skeleton$ ls -ld tor
+student@cs523:~$ cd cs523/secretstroll/
+student@cs523:~/cs523/secretstroll$ chmod 777 tor
+student@cs523:~/cs523/secretstroll$ ls -ld tor
 drwxrwxrwx 2 student student    4096 mar 24 15:31 tor
 ```
 
@@ -140,7 +168,7 @@ containers, and a virtual network.
 
 Before setting up the Docker infrastructure for the first time, you must first
 build the images which will be used to run the client and server containers. To
-do so, run the following command in the skeleton directory, which contains the
+do so, run the following command in the directory which contains the
 file `docker-compose.yml`:
 ```
 docker-compose build
@@ -153,7 +181,7 @@ docker-compose up -d
 ```
 
 When you stop working with the infrastructure, remember to shut it down by
-running the following command in the directory containing the file
+running the following command in the `secretstroll` directory containing the file
 `docker-compose.yml`:
 ```
 docker-compose down
@@ -167,9 +195,9 @@ destroying the stopped Docker containers with `docker container prune -f`.*
 
 ### Accessing the data
 
-The code of the skeleton is shared between your VM and Docker containers, so
-modifications you make in your VM will also appear in containers. Feel free to
-read the file `docker-compose.yml` to see how it is done.
+The code of the `secretstroll` directory is shared between your VM and Docker
+containers, so modifications you make in your VM will also appear in containers.
+Feel free to read the file `docker-compose.yml` to see how it is done.
 
 If you need to transfer some data between your VM and your host machine, you can
 set up ssh access and use the `scp` command as detailed before. Another option
@@ -177,13 +205,11 @@ is to have shared directories between the VM and your host. For this feature to
 work correctly you have to install *Guest Additions* from VirtualBox on the VM
 and refer to their documentation.
 
-
-
 ### Tor integration
 
-If you use the skeleton, integrating Tor into your project should be seamless.
-The Docker configuration we provide is designed to run Tor in the background,
-and the code is designed to use the Tor if requested with no effort on your part.
+Integrating Tor into your project should be seamless. The Docker configuration
+we provide is designed to run Tor in the background, and the code is designed
+to use the Tor if requested with no effort on your part.
 
 If your project works if used normally, but fails when using Tor, you may
 try to change the permission of the Tor directory with the following command
@@ -361,7 +387,7 @@ Initialization:
 
 Open a shell
 ```
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker-compose build
 $ docker-compose up -d
 ```
@@ -370,7 +396,7 @@ Server side:
 
 Open a shell
 ```
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker exec -it cs523-server /bin/bash
 (server) $ cd /server
 (server) $ python3 server.py setup -S restaurant -S bar -S dojo
@@ -380,7 +406,7 @@ $ docker exec -it cs523-server /bin/bash
 Client side:
 ```
 Open a shell
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker exec -it cs523-client /bin/bash
 (client) $ cd /client
 (client) $ python3 client.py get-pk
@@ -400,7 +426,7 @@ Initialization:
 
 ```
 Open a shell
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker-compose build
 $ docker-compose up -d
 ```
@@ -412,7 +438,7 @@ repeat that step.
 
 ```
 Open a shell
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker exec -it cs523-server /bin/bash
 (server) $ cd /server
 (server) $ python3 server.py run
@@ -426,7 +452,7 @@ Set the reveal argument (-r) to an empty value. Set the -t argument to use Tor. 
 
 ```
 Open a shell
-$ cd skeleton
+$ cd cs523/secretstroll
 $ docker exec -it cs523-client /bin/bash
 (client) $ cd /client
 (client) $ python3 client.py grid 42 -T restaurant -t
