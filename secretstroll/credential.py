@@ -15,11 +15,12 @@ resembles the original scheme definition. However, you are free to restructure
 the functions provided to resemble a more object-oriented interface.
 """
 
+from msilib.schema import Error
 from typing import Any, List, Tuple
 
 from serialization import jsonpickle
-
-
+from petrelic.multiplicative.pairing import G1, G2, GT
+import numpy as np
 # Type hint aliases
 # Feel free to change them as you see fit.
 # Maybe at the end, you will not need aliases at all!
@@ -43,7 +44,28 @@ def generate_key(
         attributes: List[Attribute]
     ) -> Tuple[SecretKey, PublicKey]:
     """ Generate signer key pair """
-    raise NotImplementedError()
+    g = G1.generator()
+    g_ = G2.generator()
+    ys = list()
+    pk = list()
+    sk = list()
+    x = G1.order().random()
+    for i in range(len(attributes)):
+        ys.append(G1.order().random())  
+    """ generate pk """     
+    pk.append(g)     
+    for y in ys:
+        pk.append(g ** y)
+    pk.append(g_)    
+    pk.append(g_ ** x) 
+    for y in ys:
+        pk.append(g_ ** y)
+    """ generate sk """    
+    sk.append(x)     
+    sk.append(g ** x)   
+    for y in ys:
+        pk.append(y)
+    return sk, pk
 
 
 def sign(
@@ -51,7 +73,9 @@ def sign(
         msgs: List[bytes]
     ) -> Signature:
     """ Sign the vector of messages `msgs` """
-    raise NotImplementedError()
+    h = G1.order().random()
+    h_ = h ** (sk[0] + np.sum(np.matmul(sk[1:],msgs)))
+    return h, h_
 
 
 def verify(
@@ -59,8 +83,11 @@ def verify(
         signature: Signature,
         msgs: List[bytes]
     ) -> bool:
-    """ Verify the signature on a vector of messages """
-    raise NotImplementedError()
+    if signature(0) == G1.unity():
+        return False
+    e = signature(1).pair(pk[len(msgs)+1])
+    e_ = signature(0).pair(pk[len(msgs)+2] * np.prod(np.power(pk[len(msgs)+3:],msgs)))
+    return e == e_
 
 
 #################################
@@ -79,7 +106,17 @@ def create_issue_request(
 
     *Warning:* You may need to pass state to the `obtain_credential` function.
     """
-    raise NotImplementedError()
+    t = G1.order().random()
+    g_t = pk[0] ** t
+    C = g_t
+    attributes = list()
+    for i, at in user_attributes:
+        C *= pk[i+1] ** at
+        attributes.append(at)
+    """proof Fiat-Shamir heuristic"""
+    """t + hash(g||h||g^t||m).x mod p Schnorr"""
+    s = t + G1.hash_to_point(pk[0],pk,C, attributes)
+    return C, (g_t, s)
 
 
 def sign_issue_request(
@@ -89,10 +126,24 @@ def sign_issue_request(
         issuer_attributes: AttributeMap
     ) -> BlindSignature:
     """ Create a signature corresponding to the user's request
-
     This corresponds to the "Issuer signing" step in the issuance protocol.
     """
-    raise NotImplementedError()
+    C = request[0]
+    g_t = request[1][0]
+    s = request[1][1]
+    g = pk[0]
+    attributes = list()
+
+    X = sk[1]
+    u = G1.order().random()
+    res = X*C
+    for i, at in issuer_attributes:
+        res *= pk[i+1] ** at
+        attributes.append(at)
+    expected_s = G1.hash_to_point(g,pk,C,attributes)
+    if g**(s - expected_s) != g_t:
+        return Error
+    return g**u,res**u,attributes
 
 
 def obtain_credential(
@@ -103,6 +154,7 @@ def obtain_credential(
 
     This corresponds to the "Unblinding signature" step.
     """
+    
     raise NotImplementedError()
 
 

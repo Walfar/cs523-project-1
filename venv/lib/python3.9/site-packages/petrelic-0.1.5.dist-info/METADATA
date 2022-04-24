@@ -1,0 +1,95 @@
+Metadata-Version: 2.1
+Name: petrelic
+Version: 0.1.5
+Summary: A Python binding for the RELIC cryptographic library
+Home-page: https://github.com/spring-epfl/petrelic
+Author: Wouter Lueks
+Author-email: wouter.lueks@epfl.ch
+License: MIT
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Security :: Cryptography
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.6
+License-File: LICENSE
+License-File: LICENSE.Apache-2.0
+License-File: LICENSE.GMP
+License-File: LICENSE.GPLv2
+License-File: LICENSE.LGPL-2.1
+License-File: LICENSE.LGPLv3
+License-File: LICENSE.RELIC
+Requires-Dist: cffi (>=1.0.0)
+Requires-Dist: msgpack (>=1.0.3)
+Provides-Extra: dev
+Requires-Dist: pytest ; extra == 'dev'
+Requires-Dist: sphinx ; extra == 'dev'
+Requires-Dist: sphinx-rtd-theme ; extra == 'dev'
+Requires-Dist: black ; extra == 'dev'
+Provides-Extra: test
+Requires-Dist: pytest ; extra == 'test'
+
+petrelic
+========
+
+.. image:: https://travis-ci.org/spring-epfl/petrelic.svg?branch=master
+   :target: https://travis-ci.org/spring-epfl/petrelic
+   :alt: Build status
+
+.. image:: https://readthedocs.org/projects/petrelic/badge/?version=latest
+   :target: https://petrelic.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+.. image:: https://codecov.io/gh/spring-epfl/petrelic/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/spring-epfl/petrelic
+   :alt: Test coverage
+
+``petrelic`` is a Python wrapper around `RELIC`_. It provides a simple python interface to the BLS-381 pairing and RELIC's big number class. Our goals is to make it easy to prototype new cryptographic applications in Python using RELIC as the backend. In the future we aim to support a few other pairing curves as well.
+
+``petrelic`` provides native, multiplicative and additive interfaces to `RELIC`_. You can use the one that you find most comfortable. ``petrelic`` overloads Python's binary operators to make computation with pairings easy. For example, here is how you would compute and verify a BLS signature using the multiplicative interface:
+
+.. code-block:: pycon
+
+   >>> from petrelic.multiplicative.pairing import G1, G2, GT
+   >>> sk = G1.order().random()
+   >>> pk = G2.generator() ** sk
+
+   >>> # Create the signature
+   >>> m = b"Some message"
+   >>> signature = G1.hash_to_point(m) ** sk
+
+   >>> # Verify the signature
+   >>> signature.pair(G2.generator()) == G1.hash_to_point(m).pair(pk)
+   True
+
+You can find more information in the `documentation`_.
+
+You can install ``petrelic`` on Linux using:
+
+.. code-block:: console
+
+    $ pip install petrelic
+
+For full details see `the installation documentation`_.
+
+.. warning::
+   Please don’t use this software for anything mission-critical. It is designed
+   for rapid prototyping of cryptographic primitives using `RELIC`_. We offer no
+   guarantees that the ``petrelic`` bindings are secure. We echo `RELIC`_ own
+   warning: "RELIC is at most alpha-quality software. Implementations may not be
+   correct or secure and may include patented algorithms. ... Use at your own risk."
+
+.. _`RELIC`: https://github.com/relic-toolkit/relic
+.. _`documentation`: https://petrelic.readthedocs.io/
+.. _`the installation documentation`: https://petrelic.readthedocs.io/en/latest/install.html
+
+
