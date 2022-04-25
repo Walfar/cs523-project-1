@@ -35,6 +35,7 @@ AnonymousCredential = Any
 DisclosureProof = Any
 
 
+
 ######################
 ## SIGNATURE SCHEME ##
 ######################
@@ -74,6 +75,8 @@ def sign(
     ) -> Signature:
     """ Sign the vector of messages `msgs` """
     h = G1.order().random()
+    while (h == 0) :
+        h = G1.order().random()
     h_ = h ** (sk[0] + np.sum(np.matmul(sk[1:],msgs)))
     return h, h_
 
@@ -106,17 +109,14 @@ def create_issue_request(
 
     *Warning:* You may need to pass state to the `obtain_credential` function.
     """
+    global t
     t = G1.order().random()
-    g_t = pk[0] ** t
-    C = g_t
-    attributes = list()
+    C =  pk[0] ** t
+    # Is i starting at 0 or 1 ?
     for i, at in user_attributes:
-        C *= pk[i+1] ** at
-        attributes.append(at)
-    """proof Fiat-Shamir heuristic"""
-    """t + hash(g||h||g^t||m).x mod p Schnorr"""
-    s = t + G1.hash_to_point(pk[0],pk,C, attributes)
-    return C, (g_t, s)
+        C *= pk[i] ** at
+    s = t + G1.hash_to_point(pk,C, user_attributes)
+    return C, s
 
 
 def sign_issue_request(
@@ -129,33 +129,29 @@ def sign_issue_request(
     This corresponds to the "Issuer signing" step in the issuance protocol.
     """
     C = request[0]
-    g_t = request[1][0]
-    s = request[1][1]
+    s = request[1]
     g = pk[0]
-    attributes = list()
 
     X = sk[1]
     u = G1.order().random()
     res = X*C
     for i, at in issuer_attributes:
-        res *= pk[i+1] ** at
-        attributes.append(at)
-    expected_s = G1.hash_to_point(g,pk,C,attributes)
-    if g**(s - expected_s) != g_t:
-        return Error
-    return g**u,res**u,attributes
+        res *= pk[i] ** at
+    return g**u,res**u,issuer_attributes
 
 
 def obtain_credential(
-        pk: PublicKey,
-        response: BlindSignature
+        response: BlindSignature,
     ) -> AnonymousCredential:
     """ Derive a credential from the issuer's response
 
     This corresponds to the "Unblinding signature" step.
     """
+    attributes = response[2] 
+    signature = (response[0], response[1]/t)
+    return signature, attributes
     
-    raise NotImplementedError()
+    
 
 
 ## SHOWING PROTOCOL ##
@@ -167,8 +163,13 @@ def create_disclosure_proof(
         message: bytes
     ) -> DisclosureProof:
     """ Create a disclosure proof """
-    raise NotImplementedError()
-
+    r = G1.order().random()
+    t = G1.order().random()
+    signature = (credential[0][0]**r, ((credential[0][0]**t)*credential[0][1])**r)
+    C = signature[0].pair()**t 
+    for i in range(len(hidden_attributes)) :
+        C *= signature(0).pair(pk[len(pk) -1 - i])**hidden_attributes[i] 
+    return signature, hidden_attributes
 
 def verify_disclosure_proof(
         pk: PublicKey,
@@ -179,4 +180,6 @@ def verify_disclosure_proof(
 
     Hint: The verifier may also want to retrieve the disclosed attributes
     """
-    raise NotImplementedError()
+    if disclosure_proof[0][0] == G1.unity():
+        return False
+    return True    
