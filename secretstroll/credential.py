@@ -137,18 +137,19 @@ def sign_issue_request(
     res = X*C
     for i, at in issuer_attributes:
         res *= pk[i] ** at
-    return g**u,res**u,issuer_attributes
+    return (g**u,res**u),issuer_attributes
 
 
 def obtain_credential(
+        pk: PublicKey,
         response: BlindSignature,
     ) -> AnonymousCredential:
     """ Derive a credential from the issuer's response
 
     This corresponds to the "Unblinding signature" step.
     """
-    attributes = response[2] 
-    signature = (response[0], response[1]/t)
+    attributes = response[1] 
+    signature = (response[0][0], response[0][1]/response[0][0]**t)
     return signature, attributes
     
     

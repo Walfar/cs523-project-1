@@ -2,10 +2,15 @@
 Classes that you need to complete.
 """
 
+import json
 from typing import Any, Dict, List, Union, Tuple
+
+from attr import attributes
+from credential import create_issue_request, generate_key, obtain_credential, sign_issue_request, verify_disclosure_proof, create_disclosure_proof
 
 # Optional import
 from serialization import jsonpickle
+import numpy as np
 
 # Type aliases
 State = Any
@@ -19,10 +24,7 @@ class Server:
         """
         Server constructor.
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        pass
 
 
     @staticmethod
@@ -44,10 +46,9 @@ class Server:
             You are free to design this as you see fit, but the return types
             should be encoded as bytes.
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        sk, pk = generate_key(subscriptions)
+        return jsonpickle.encode(sk), np.array(pk).tobytes
+           
 
 
     def process_registration(
@@ -71,10 +72,15 @@ class Server:
             serialized response (the client should be able to build a
                 credential with this response).
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        server_sk_unserialized = jsonpickle.decode(server_sk)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+        issuance_request_unserialized = jsonpickle.decode(issuance_request)
+
+        attributeMap = List[(1, username)]
+        for i in range(len(subscriptions)):
+            attributeMap.append((i+2, subscriptions))    
+        response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, attributeMap)
+        return jsonpickle.encode(response)
 
 
     def check_request_signature(
@@ -95,10 +101,12 @@ class Server:
         Returns:
             whether a signature is valid
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        signature_unserialized = jsonpickle.decode(signature)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+        
+        # what about the attributes ?
+        return verify_disclosure_proof(server_pk_unserialized, (signature_unserialized, revealed_attributes), message)
+
 
 
 class Client:
@@ -108,10 +116,7 @@ class Client:
         """
         Client constructor.
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError()
+        pass
 
 
     def prepare_registration(
@@ -134,10 +139,12 @@ class Client:
                 from prepare_registration to proceed_registration_response.
                 You need to design the state yourself.
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        attributeMap = List[(1, username)]
+        for i in range(len(subscriptions)):
+            attributeMap.append((i+2, subscriptions))  
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+
+        return create_issue_request(server_pk_unserialized, attributeMap)
 
 
     def process_registration_response(
@@ -157,10 +164,10 @@ class Client:
         Return:
             credentials: create an attribute-based credential for the user
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        server_response_unserialized = jsonpickle.decode(server_response)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+
+        return obtain_credential(server_pk_unserialized, server_response_unserialized)
 
 
     def sign_request(
@@ -181,7 +188,7 @@ class Client:
         Returns:
             A message's signature (serialized)
         """
-        ###############################################
-        # TODO: Complete this function.
-        ###############################################
-        raise NotImplementedError
+        credentials_unserialized = jsonpickle.decode(credentials)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+
+        return create_disclosure_proof(server_pk_unserialized, credentials_unserialized, types, message)
