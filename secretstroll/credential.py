@@ -18,6 +18,8 @@ the functions provided to resemble a more object-oriented interface.
 from msilib.schema import Error
 from typing import Any, List, Tuple
 
+from scipy import rand
+
 from serialization import jsonpickle
 from petrelic.multiplicative.pairing import G1, G2, GT
 import numpy as np
@@ -115,8 +117,22 @@ def create_issue_request(
     # Is i starting at 0 or 1 ?
     for i, at in user_attributes:
         C *= pk[i] ** at
-    s = t + G1.hash_to_point(pk,C, user_attributes)
-    return C, s
+    Ys = np.array()
+    random = list()
+    s = list()
+    random.append(G1.order().random())
+    for i, at in user_attributes:
+        Ys.append(pk[i])
+        random.append(G1.order().random())
+    
+    R = pk[0]**random[0] * np.prod(np.power(Ys,random[1:]))
+    c = G1.hash_to_point(pk[0],Ys,C,R)
+    
+    s.append((random[0]-c * t) % G1.order())
+    for i in  range(1,len(user_attributes)+1) :
+        s.append((random[i] - c *user_attributes[i-1])% G1.order() )
+
+    return C,c,s,Ys
 
 
 def sign_issue_request(
@@ -128,10 +144,22 @@ def sign_issue_request(
     """ Create a signature corresponding to the user's request
     This corresponds to the "Issuer signing" step in the issuance protocol.
     """
-    C = request[0]
-    s = request[1]
-    g = pk[0]
 
+    
+    C = request[0]
+    c = request[1]
+    s = request[2]
+    Ys = request[3]
+    R_prime = (C**c) * (pk[0]**s[0]) 
+    
+    for i in range(len(Ys)) :
+        R_prime *= Ys[i]**s[i+1]
+    c_prime = G1.hash_to_point(pk[0],Ys,C,R_prime)
+    if(c != c_prime) : 
+        print("The commitment C wasn't computed correctly")
+        return
+
+    g = pk[0]
     X = sk[1]
     u = G1.order().random()
     res = X*C
