@@ -1,7 +1,7 @@
 
 import random
 from credential import generate_key, sign, verify
-from secretstroll.credential import create_disclosure_proof, create_issue_request, obtain_credential, sign_issue_request
+from secretstroll.credential import create_disclosure_proof, create_issue_request, obtain_credential, sign_issue_request, verify_disclosure_proof
 
 def verify_test() :
     attributes = ['email','location','credential','age']
@@ -53,6 +53,7 @@ def verify_create_issue() :
       request = create_issue_request(pk,user_attributes)
       sign_request = sign_issue_request(pk,request,issuer_attributes)
 
-      assert not sign_request.isInstance(None)
       credential = obtain_credential()
-      disclosure_proof = create_disclosure_proof(pk,credential,us)
+      disclosure_proof = create_disclosure_proof(pk,credential,list('credential','age'))
+      server_pk = (pk,attributes)
+      assert(verify_disclosure_proof(server_pk,disclosure_proof,list(b'Hello World',b'Lol')))

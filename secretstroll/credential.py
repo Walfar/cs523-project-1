@@ -156,9 +156,11 @@ def sign_issue_request(
     for i in range(len(Ys)) :
         R_prime *= Ys[i]**s[i+1]
     c_prime = G1.hash_to_point(pk[0],pk[1:L+1],C,R_prime)
-    if(c != c_prime) : 
-        print("The commitment C wasn't computed correctly")
-        return
+    try :
+        assert c==c_prime
+    except AssertionError :
+        print("The challenge wasn't verified in sign_issue_request")
+
 
     g = pk[0]
     X = sk[1]
@@ -177,9 +179,13 @@ def obtain_credential(
 
     This corresponds to the "Unblinding signature" step.
     """
-    attributes = response[1] 
+    attributes = response[1].values() # list de string 
     signature = (response[0][0], response[0][1]/response[0][0]**t)
-    return signature, attributes
+    try :
+        assert verify(pk,signature,bytes(attributes,'uft8)'))
+    except AssertionError:
+        print("The signature for the credential is wrong")
+    return signature, attributes.values()
     
     
 
@@ -192,8 +198,8 @@ def create_disclosure_proof(
         hidden_attributes: List[Attribute],
         message: bytes
     ) -> DisclosureProof:
-    all_attributes = server_pk[1]
-    L = len(all_attributes)
+    all_attributes = credential[1]
+    L = len(all_attributes)+1
     pk = server_pk[0]
     """ Create a disclosure proof """
     r = G1.order().random()
