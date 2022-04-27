@@ -15,13 +15,13 @@ resembles the original scheme definition. However, you are free to restructure
 the functions provided to resemble a more object-oriented interface.
 """
 
-from msilib.schema import Error
+import hashlib
+from stroll import State
 from typing import Any, List, Tuple
-
-from scipy import rand
 
 from serialization import jsonpickle
 from petrelic.multiplicative.pairing import G1, G2, GT
+from petrelic.bn import Bn
 import numpy as np
 # Type hint aliases
 # Feel free to change them as you see fit.
@@ -37,11 +37,9 @@ AnonymousCredential = Any
 DisclosureProof = Any
 
 
-
 ######################
 ## SIGNATURE SCHEME ##
 ######################
-
 
 def generate_key(
         attributes: List[Attribute]
@@ -49,11 +47,12 @@ def generate_key(
     """ Generate signer key pair """
     g = G1.generator()
     g_ = G2.generator()
-    ys = list()
-    pk = list()
-    sk = list()
+    ys = []
+    pk = []
+    sk = []
     x = G1.order().random()
-    for i in range(len(attributes)):
+    L = len(attributes)+1
+    for i in range(L):
         ys.append(G1.order().random())  
     """ generate pk """     
     pk.append(g)     
@@ -67,8 +66,9 @@ def generate_key(
     sk.append(x)     
     sk.append(g ** x)   
     for y in ys:
-        pk.append(y)
+        pk.append(y)      
     return sk, pk
+
 
 
 def sign(
@@ -102,7 +102,7 @@ def verify(
 ## ISSUANCE PROTOCOL ##
 
 def create_issue_request(
-        pk: PublicKey,
+        server_pk: PublicKey,
         user_attributes: AttributeMap
     ) -> IssueRequest:
     """ Create an issuance request
@@ -111,28 +111,30 @@ def create_issue_request(
 
     *Warning:* You may need to pass state to the `obtain_credential` function.
     """
-    global t
+    pk = server_pk[0]
+    attributes = [Bn.from_binary(jsonpickle.encode(user_attributes[y]).encode()) for y in user_attributes]
     t = G1.order().random()
     C =  pk[0] ** t
-    # Is i starting at 0 or 1 ?
-    for i, at in user_attributes:
-        C *= pk[i] ** at
-    Ys = np.array()
+    for i in range(len(attributes)):
+        C *= pk[i] ** attributes[i]
+
+    Ys = []
     random = list()
     s = list()
     random.append(G1.order().random())
-    for i, at in user_attributes:
+    for i in attributes:
         Ys.append(pk[i])
         random.append(G1.order().random())
     
     R = pk[0]**random[0] * np.prod(np.power(Ys,random[1:]))
-    c = G1.hash_to_point(pk[0],Ys,C,R)
+
+    c = hash(str(pk[0]) + "|" + str(Ys) + "|" + str(C) + "|" + str(R))
     
     s.append((random[0]-c * t) % G1.order())
-    for i in  range(1,len(user_attributes)+1) :
-        s.append((random[i] - c *user_attributes[i-1])% G1.order() )
+    for i in  range(1,len(attributes)+1) :
+        s.append((random[i] - c *attributes[i]))
 
-    return C,c,s,Ys
+    return (C,c,s), t
 
 
 def sign_issue_request(
@@ -146,15 +148,19 @@ def sign_issue_request(
     """
 
     
-    C = request[0]
-    c = request[1]
-    s = request[2]
-    Ys = request[3]
+    C = jsonpickle.loads(request[0])
+    c = jsonpickle.loads(request[1])
+    s = jsonpickle.loads(request[2])
+    user_attributes = jsonpickle.loads(request[3])
+    Ys = []
+
+    for i in user_attributes:
+        Ys.append(pk[i+1])
     R_prime = (C**c) * (pk[0]**s[0]) 
     
     for i in range(len(Ys)) :
         R_prime *= Ys[i]**s[i+1]
-    c_prime = G1.hash_to_point(pk[0],Ys,C,R_prime)
+    c_prime = hash(str(pk[0])+"|"+str(Ys)+"|"+str(C)+"|"+str(R_prime))
     if(c != c_prime) : 
         print("The commitment C wasn't computed correctly")
         return
@@ -171,17 +177,19 @@ def sign_issue_request(
 def obtain_credential(
         pk: PublicKey,
         response: BlindSignature,
+        t: State
     ) -> AnonymousCredential:
     """ Derive a credential from the issuer's response
 
     This corresponds to the "Unblinding signature" step.
     """
+    
     attributes = response[1] 
     signature = (response[0][0], response[0][1]/response[0][0]**t)
+    if verify(pk, signature, attributes) == False: 
+        return
     return signature, attributes
     
-    
-
 
 ## SHOWING PROTOCOL ##
 
@@ -209,6 +217,4 @@ def verify_disclosure_proof(
 
     Hint: The verifier may also want to retrieve the disclosed attributes
     """
-    if disclosure_proof[0][0] == G1.unity():
-        return False
-    return True    
+    return disclosure_proof[0][0] != G1.unity() and verify(pk, disclosure_proof[0], message)

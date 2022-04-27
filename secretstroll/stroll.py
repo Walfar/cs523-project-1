@@ -5,8 +5,7 @@ Classes that you need to complete.
 import json
 from typing import Any, Dict, List, Union, Tuple
 
-from attr import attributes
-from credential import create_issue_request, generate_key, obtain_credential, sign_issue_request, verify_disclosure_proof, create_disclosure_proof
+from credential import *
 
 # Optional import
 from serialization import jsonpickle
@@ -47,20 +46,19 @@ class Server:
             should be encoded as bytes.
         """
         sk, pk = generate_key(subscriptions)
-        return jsonpickle.encode(sk), np.array(pk).tobytes
-           
-
+        pk = [pk, subscriptions]
+        return jsonpickle.encode(sk).encode(),jsonpickle.encode(pk).encode()   
 
     def process_registration(
             self,
             server_sk: bytes,
             server_pk: bytes,
-            issuance_request: bytes,
+            issue_request: bytes,
             username: str,
             subscriptions: List[str]
         ) -> bytes:
         """ Registers a new account on the server.
-
+    
         Args:
             server_sk: the server's secret key (serialized)
             issuance_request: The issuance request (serialized)
@@ -72,15 +70,26 @@ class Server:
             serialized response (the client should be able to build a
                 credential with this response).
         """
+
+        # How to serialize/deserialize ?
         server_sk_unserialized = jsonpickle.decode(server_sk)
         server_pk_unserialized = jsonpickle.decode(server_pk)
-        issuance_request_unserialized = jsonpickle.decode(issuance_request)
+        issuance_request_unserialized = jsonpickle.decode(issue_request)  
 
-        attributeMap = List[(1, username)]
-        for i in range(len(subscriptions)):
-            attributeMap.append((i+2, subscriptions))    
-        response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, attributeMap)
-        return jsonpickle.encode(response)
+        for sub in subscriptions:
+            if sub not in server_pk_unserialized[1]:
+                raise RuntimeError("A subscription is not valid")          
+
+        attributes = server_pk_unserialized[1]
+        # Use all attributes + username as issuer attributes
+        Ys = server_pk[1:len(attributes)+1]
+        issuer_attributes = {}
+        for Yi in Ys:
+            issuer_attributes[Yi] = sub
+        issuer_attributes[len(attributes)] = username 
+
+        response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, issuer_attributes)
+        return jsonpickle.encode(response).encode()
 
 
     def check_request_signature(
@@ -101,8 +110,12 @@ class Server:
         Returns:
             whether a signature is valid
         """
-        signature_unserialized = jsonpickle.decode(signature)
-        server_pk_unserialized = jsonpickle.decode(server_pk)
+        signature_unserialized = jsonpickle.loads(signature.decode('utf-8'))
+        server_pk_unserialized = jsonpickle.loads(server_pk).decode('utf-8')
+
+        for attr in revealed_attributes:
+            if attr not in server_pk_unserialized[1]:
+                raise RuntimeError("Revealed attributes are not valid")  
         
         # what about the attributes ?
         return verify_disclosure_proof(server_pk_unserialized, (signature_unserialized, revealed_attributes), message)
@@ -139,12 +152,22 @@ class Client:
                 from prepare_registration to proceed_registration_response.
                 You need to design the state yourself.
         """
-        attributeMap = List[(1, username)]
-        for i in range(len(subscriptions)):
-            attributeMap.append((i+2, subscriptions))  
-        server_pk_unserialized = jsonpickle.decode(server_pk)
+        # Verifiy user has valid attributes
 
-        return create_issue_request(server_pk_unserialized, attributeMap)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
+        attributes = server_pk_unserialized[1]
+        pk = server_pk_unserialized[0]
+        Ys = pk[1:len(attributes)+1]
+        
+        # Construct dictionary of user attributes where each Yi is mapped to the corresponding subscription 
+        user_attributes = {}
+        for sub in subscriptions:
+            Yi = Ys[attributes.index(sub)]
+            user_attributes[Yi] = sub
+        user_attributes[len(attributes)] = username    
+        # Use t as the state
+        issue_request, t = create_issue_request(server_pk_unserialized, user_attributes)
+        return jsonpickle.encode(issue_request).encode(), t
 
 
     def process_registration_response(
@@ -164,10 +187,12 @@ class Client:
         Return:
             credentials: create an attribute-based credential for the user
         """
+
         server_response_unserialized = jsonpickle.decode(server_response)
         server_pk_unserialized = jsonpickle.decode(server_pk)
 
-        return obtain_credential(server_pk_unserialized, server_response_unserialized)
+        credentials = obtain_credential(server_pk_unserialized, server_response_unserialized, private_state)
+        return jsonpickle.encode(credentials).encode()
 
 
     def sign_request(
@@ -189,6 +214,11 @@ class Client:
             A message's signature (serialized)
         """
         credentials_unserialized = jsonpickle.decode(credentials)
+
+        for type in types:
+            if type not in credentials:
+                raise RuntimeError("Attributes are not in the credential")
+
         server_pk_unserialized = jsonpickle.decode(server_pk)
 
-        return create_disclosure_proof(server_pk_unserialized, credentials_unserialized, types, message)
+        return jsonpickle.encode(create_disclosure_proof(server_pk_unserialized, credentials_unserialized, types, message)).encode()
