@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import accuracy_score
+from scapy.all import *
 
 
 def classify(train_features, train_labels, test_features, test_labels):
@@ -54,11 +56,20 @@ def perform_crossval(features, labels, folds=10):
     labels = np.array(labels)
     features = np.array(features)
 
+    y_true = np.array()
+    y_pred = np.array()
     for train_index, test_index in kf.split(features, labels):
         X_train, X_test = features[train_index], features[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
         predictions = classify(X_train, y_train, X_test, y_test)
+        for prediction,true_value in zip(predictions,y_test) :
+            y_pred.append(prediction)
+            y_true.append(true_value)
 
+
+    # View accuracy score
+    performance = accuracy_score(y_true, y_pred)
+    return performance
     ###############################################
     # TODO: Write code to evaluate the performance of your classifier
     ###############################################
