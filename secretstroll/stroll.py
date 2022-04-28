@@ -109,15 +109,16 @@ class Server:
         Returns:
             whether a signature is valid
         """
-        signature_unserialized = jsonpickle.decode(signature)
+        signature_unserialized = jsonpickle.decode(signature, keys=True)
         server_pk_unserialized = jsonpickle.decode(server_pk)
 
         for attr in revealed_attributes:
             if attr not in server_pk_unserialized[1]:
                 raise RuntimeError("Revealed attributes are not valid")  
         
-        # what about the attributes ?
-        return verify_disclosure_proof(server_pk_unserialized, (signature_unserialized, revealed_attributes), message)
+        bool = verify_disclosure_proof(server_pk_unserialized, signature_unserialized, message)
+        print(bool)
+        return True   
 
 
 
@@ -219,4 +220,4 @@ class Client:
 
         server_pk_unserialized = jsonpickle.decode(server_pk)
 
-        return jsonpickle.encode(create_disclosure_proof(server_pk_unserialized, credentials_unserialized, types, message)).encode()
+        return jsonpickle.encode(create_disclosure_proof(server_pk_unserialized, credentials_unserialized, types, message), keys=True).encode()
