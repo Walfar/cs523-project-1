@@ -83,8 +83,8 @@ def sign(
     while h == G1.neutral_element():
         h = G1.generator() ** G1.order().random()
     sum = sk[0]
-    for i in range(1,len(msgs)):
-        sum += sk[i+1]* Bn.from_binary(msgs[i])      
+    for i in range(1,len(msgs)+1):
+        sum += sk[i+1]* Bn.from_binary(msgs[i-1])      
     sig = [h, h ** sum]
     return sig
 
@@ -102,10 +102,10 @@ def verify(
     if signature[0] == G1.unity():
         return False  
     e = signature[1].pair(pk[len(msgs)+1])
-    prod = 1
+    prod = pk[len(msgs)+2]
     for i in range(len(msgs)):
-        prod *= pk[len(msgs)+3+i]*msgs[i]
-    e_ = signature[0].pair(pk[len(msgs)+2] * prod)   
+        prod *= pk[len(msgs)+3+i]**Bn.from_binary(msgs[i])
+    e_ = signature[0].pair( prod)   
     return e == e_
 
 
@@ -132,9 +132,7 @@ def create_issue_request(
     s = list()
     random.append(G1.order().random())
     C =  pk[0] ** t
-    print("pk is")
-    print(pk)
-
+   
     for Yi in user_attributes:
         C *= Yi ** Bn.from_binary(bytes(user_attributes[Yi], 'utf-8')) 
         Ys.append(Yi)
@@ -179,9 +177,6 @@ def sign_issue_request(
         R_prime *= yi**s[index]
         index += 1
 
-    print("pk is")
-    print(pk)
-    
 
     c_prime = hashlib.sha256(jsonpickle.encode(pk).encode())
     c_prime.update(jsonpickle.encode(C).encode())
@@ -213,9 +208,7 @@ def obtain_credential(
 
     t = state[0]
     username = list(state[1].values()).pop()
-
-    print("pk is")
-    print(server_pk[0])
+    print(username)
 
 
     msgs = {}

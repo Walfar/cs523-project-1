@@ -9,7 +9,6 @@ from credential import *
 
 # Optional import
 from serialization import jsonpickle
-import numpy as np
 
 # Type aliases
 State = Any

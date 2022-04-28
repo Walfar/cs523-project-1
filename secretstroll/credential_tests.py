@@ -9,53 +9,60 @@ def verify_test() :
     sk,pk = generate_key(attributes)
     signature = sign(sk,msgs)
     assert verify(pk,signature,msgs)
+    
 
 def not_verify_test() :
     attributes = ['email','location','credential','age']
     msgs = [b'email',b'location',b'credential',b'age']
-    sk,pk = generate_key
-    signature = sign (sk,)
+    sk,pk = generate_key(attributes)
+    signature = sign (sk,msgs)
     false_msg = [b'false',b'message',b'to',b'test']
     assert not verify(pk,signature,false_msg)
 
 def verify_pk_changed() :
     attributes = ['email','location','credential','age']
     msgs = [b'email',b'location',b'credential',b'age']
-    sk,pk = generate_key
-    sk1,pk1 = generate_key
+    sk,pk = generate_key(attributes)
+    sk1,pk1 = generate_key(attributes)
     signature = sign(sk,msgs)
     assert not verify(pk1,signature,msgs)
 
 def verify_create_issue() :
-      attributes = ['email','location','credential','age']  
-      msg = list()
-      for i in range(len(attributes)) : 
-          msg.append(attributes[i].encode())
+      attributes = ['email','location','credential','age']
+      att_and_username = attributes.copy()
+      att_and_username.append('maxton')
+      print(attributes)
+      print(att_and_username)
+      subscription = ['email','location']
+      
+      
+      msg = '(42,32)'.encode('utf-8')
        
-      sk,pk = generate_key # keys of the issuer 
-      n = random.sample(1,len(attributes)-1) # number of sample to take
-      user_index = random.sample(range(0,len(attributes)),n)
-      issuer_index = list(range(len(attributes)))
-      for i in user_index :
-          issuer_index.remove(i)
+      sk,pk = generate_key(att_and_username) # keys of the issuer 
+      server_pk = (pk,['email','location','credential','age','username'])
+      user_index = [0,1,4]
+      issuer_index = [2,3]
 
       print(user_index)
       print(issuer_index)
 
-      user_attributes = list()
-      issuer_attributes = list()
+      user_attributes_dict = {}
+      issuer_attributes_dict = {}
       for i in user_index : 
-          user_attributes.append(int.from_bytes(msg[i]))
+          print(i)
+          user_attributes_dict[pk[i+1]] = att_and_username[i]
       
       for i in issuer_index :
-          issuer_index.append(int.from_bytes(msg[i]))
+          issuer_attributes_dict[pk[i+1]] = att_and_username[i]
       
-      request = create_issue_request(pk,user_attributes)
-      sign_request = sign_issue_request(pk,request,issuer_attributes)
+      request,state = create_issue_request(server_pk,user_attributes_dict)
+      response = sign_issue_request(sk,server_pk,request,issuer_attributes_dict)
 
-      credential = obtain_credential()
-      disclosure_proof = create_disclosure_proof(pk,credential,list('credential','age'))
-      server_pk = (pk,attributes)
-      assert(verify_disclosure_proof(server_pk,disclosure_proof,list(b'Hello World',b'Lol')))
+      credential = obtain_credential(server_pk,response,state)
+      disclosure_proof = create_disclosure_proof(server_pk,credential,subscription,msg)
+      assert(verify_disclosure_proof(server_pk,disclosure_proof,msg))
 
 verify_test()
+not_verify_test()
+verify_pk_changed()
+verify_create_issue()
