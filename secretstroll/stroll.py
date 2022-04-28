@@ -65,7 +65,6 @@ class Server:
             username: username
             subscriptions: attributes
 
-
         Return:
             serialized response (the client should be able to build a
                 credential with this response).
@@ -74,7 +73,7 @@ class Server:
         # How to serialize/deserialize ?
         server_sk_unserialized = jsonpickle.decode(server_sk)
         server_pk_unserialized = jsonpickle.decode(server_pk)
-        issuance_request_unserialized = jsonpickle.decode(issue_request)  
+        issuance_request_unserialized = jsonpickle.decode(issue_request, keys=True)  
 
         for sub in subscriptions:
             if sub not in server_pk_unserialized[1]:
@@ -82,11 +81,11 @@ class Server:
 
         attributes = server_pk_unserialized[1]
         # Use all attributes + username as issuer attributes
-        Ys = server_pk[1:len(attributes)+1]
+        Ys = server_pk_unserialized[0][1:len(attributes)+1]
         issuer_attributes = {}
         for Yi in Ys:
             issuer_attributes[Yi] = sub
-        issuer_attributes[len(attributes)] = username 
+        issuer_attributes[Ys[len(attributes)-1]] = username  
 
         response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, issuer_attributes)
         return jsonpickle.encode(response).encode()
@@ -110,8 +109,8 @@ class Server:
         Returns:
             whether a signature is valid
         """
-        signature_unserialized = jsonpickle.loads(signature.decode('utf-8'))
-        server_pk_unserialized = jsonpickle.loads(server_pk).decode('utf-8')
+        signature_unserialized = jsonpickle.decode(signature)
+        server_pk_unserialized = jsonpickle.decode(server_pk)
 
         for attr in revealed_attributes:
             if attr not in server_pk_unserialized[1]:
@@ -158,16 +157,15 @@ class Client:
         attributes = server_pk_unserialized[1]
         pk = server_pk_unserialized[0]
         Ys = pk[1:len(attributes)+1]
-        
         # Construct dictionary of user attributes where each Yi is mapped to the corresponding subscription 
         user_attributes = {}
         for sub in subscriptions:
             Yi = Ys[attributes.index(sub)]
             user_attributes[Yi] = sub
-        user_attributes[len(attributes)] = username    
+        user_attributes[Ys[len(attributes)-1]] = username    
         # Use t as the state
-        issue_request, t = create_issue_request(server_pk_unserialized, user_attributes)
-        return jsonpickle.encode(issue_request).encode(), t
+        issue_request, state = create_issue_request(server_pk_unserialized, user_attributes)
+        return jsonpickle.encode(issue_request, keys=True).encode(), state
 
 
     def process_registration_response(
@@ -216,7 +214,7 @@ class Client:
         credentials_unserialized = jsonpickle.decode(credentials)
 
         for type in types:
-            if type not in credentials:
+            if type not in credentials_unserialized[1]:
                 raise RuntimeError("Attributes are not in the credential")
 
         server_pk_unserialized = jsonpickle.decode(server_pk)
