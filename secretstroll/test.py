@@ -87,20 +87,13 @@ def test_uncorrect_credential() :
     issue_request,private_state = Client().prepare_registration(pk,username,user_subscription)
     server_response = Server().process_registration(sk,pk,issue_request,username,user_subscription)
     credential = Client().process_registration_response(pk,server_response,private_state)
-    
-    # We obtain the signature returned by obtain_credential() in credential.py
-    credential =jsonpickle.decode(credential) 
-    signature  = credential[0]
-
-    # We tamper the signature 
-
-    signature = (signature[0]*G1.generator(),signature[1])
-    credential = (signature,credential[1])
-    credential = jsonpickle.encode(credential).encode()
-
 
     # Signature for request
     signature = Client().sign_request(pk,credential,message,disclosed_attributes)
+    sig = jsonpickle.decode(signature)
+    fakeSig = (G1.generator(), G1.generator())
+    signature = fakeSig, sig[1], sig[2], sig[3]
+    signature = jsonpickle.encode(signature).encode()
     assert(not Server().check_request_signature(pk,message,disclosed_attributes,signature))
 
     

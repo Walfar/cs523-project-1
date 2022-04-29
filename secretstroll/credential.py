@@ -231,8 +231,6 @@ def create_disclosure_proof(
     all_attributes = server_pk[1]
     L = len(all_attributes)
     all_attributes[L-1] = credentials[-1]
-    print(credentials)
-    print(all_attributes)
     pk = server_pk[0]
     """ Create a disclosure proof """
     r = G1.order().random()
