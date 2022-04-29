@@ -210,7 +210,6 @@ def obtain_credential(
 
     t = state[0]
     username = list(state[1].values()).pop()
-    print(username)
 
     signature = (response[0][0], response[0][1]/(response[0][0]**t))
     credentials.append(username)
@@ -290,19 +289,16 @@ def verify_disclosure_proof(
     """
 
     C_prime = signature[1].pair(g_tilda) / signature[0].pair(X_tilda)
-    print(disclosed_attributes_dict)
     for i in disclosed_attributes_dict:
         C_prime *= signature[0].pair(pk[L+2+1]) ** (-disclosed_attributes_dict[i] % G1.order())
 
     hidden_attributes_idx = [i for i in range(1,L+1) if i not in list(disclosed_attributes_dict.keys())]
 
     if signature[0] == G1.unity():
-        print("unity")
         return False
     R_prime = (C** c) *  (signature[0].pair(g_tilda) ** s[0])
     index = 1
     for i in hidden_attributes_idx:
-        print(i)
         R_prime *= signature[0].pair(pk[L+2+i])**s[index]    
         index += 1  
      # derive c prime 
