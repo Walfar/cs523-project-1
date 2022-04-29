@@ -255,7 +255,7 @@ def create_disclosure_proof(
 
     C = signature[0].pair(g_tilda)**t
     for i in hidden_attributes_dict:
-        C *= signature[0].pair(pk[L+2+i])**(hidden_attributes_dict[i])
+        C *= signature[0].pair(pk[L+2+i])**(hidden_attributes_dict[i]% G1.order())
     # Compute R and s the reponse with the rai and rt ( random values) 
     rt = G1.order().random()
     random = list()
@@ -264,7 +264,7 @@ def create_disclosure_proof(
     for i in hidden_attributes_dict :
         rai = G1.order().random()
         random.append(rai)
-        R *= signature[0].pair(pk[L+2+i])**hidden_attributes_dict[i]  
+        R *= signature[0].pair(pk[L+2+i])**rai  
     # derive c = challenge
     c = hashlib.sha256(jsonpickle.encode(pk).encode())
     c.update(jsonpickle.encode(C).encode())
