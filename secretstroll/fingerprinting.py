@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score,mean_squared_error,explained_variance_score
 from scapy.all import *
 import numpy as np
 import os
@@ -59,8 +59,8 @@ def perform_crossval(features, labels, folds=10):
     labels = np.array(labels)
     features = np.array(features)
 
-    y_true = np.array([])
-    y_pred = np.array([])
+    y_true = []
+    y_pred = []
     for train_index, test_index in kf.split(features, labels):
         X_train, X_test = features[train_index], features[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
@@ -71,7 +71,9 @@ def perform_crossval(features, labels, folds=10):
 
 
     # View accuracy score
-    performance = accuracy_score(y_true, y_pred)
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    performance = (accuracy_score(y_true, y_pred),mean_squared_error(y_true,y_pred),explained_variance_score(y_true,y_pred))
     return performance
     ###############################################
     # TODO: Write code to evaluate the performance of your classifier
@@ -129,9 +131,9 @@ def load_data():
                 for b in raw(pkt) : 
                      bytes_list.append(b)
         if len(bytes_list) > 10 :
-            bytes_list = bytes_list[:10000]
+            bytes_list = bytes_list[:13200]
 
-        if(len(bytes_list) == 10000) :
+        if(len(bytes_list) == 13200) :
             labels.append(cell_id)
             features.append(bytes_list)
 
@@ -154,7 +156,7 @@ def main():
     """
 
     features, labels = load_data()
-    perform_crossval(features, labels, folds=1)
+    print(perform_crossval(features, labels, folds=3))
     
 if __name__ == "__main__":
     try:
