@@ -82,9 +82,11 @@ class Server:
         # Use all attributes + username as issuer attributes
         Ys = server_pk_unserialized[0][1:len(attributes)+1]
         issuer_attributes = {}
-        for Yi in Ys:
-            issuer_attributes[Yi] = sub
-        issuer_attributes[Ys[len(attributes)-1]] = username  
+        for attr in attributes[:len(attributes)-1]:
+            if attr not in subscriptions:
+                issuer_attributes[Ys[attributes.index(attr)]] = attr    
+        print("issuer attributes is")
+        print(issuer_attributes)        
 
         response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, issuer_attributes)
         return jsonpickle.encode(response).encode()
