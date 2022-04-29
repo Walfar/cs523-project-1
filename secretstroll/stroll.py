@@ -154,6 +154,10 @@ class Client:
         attributes = server_pk_unserialized[1]
         pk = server_pk_unserialized[0]
 
+        for sub in subscriptions:
+            if sub not in attributes:
+                raise RuntimeError("Subscription is not valid ")
+
         # Construct dictionary of user attributes (containing only username)
         user_attributes = {}
         user_attributes[pk[len(attributes)]] = username 

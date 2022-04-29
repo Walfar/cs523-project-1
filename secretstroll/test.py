@@ -106,7 +106,7 @@ def test_uncorrect_credential() :
     
 def test_subscribed_all() :
     attributes = ['restaurants','gym','dojo','bar','username']
-    user_subscription = attributes
+    user_subscription = attributes[:-1]
     username = 'test'
     disclosed_attributes = list()
     message = bytes("(40.741895,-73.989308)",'utf-8')
@@ -126,20 +126,20 @@ def test_wrong_attributes1() :
     false_attributes = ['wrong','attributes']
     username = 'test'
     sk,pk = Server.generate_ca(attributes)    
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         # This test asserts that a Runtime error will be raised
         issue_request,private_state = Client().prepare_registration(pk,username,false_attributes)
 
 def test_wrong_attributes2() : 
-    attributes = list('restaurants','gym','dojo','bar','username')
-    user_subscriptions = list('restaurants','gym')
-    false_attributes = list('wrong','attributes')
+    attributes = ['restaurants','gym','dojo','bar','username']
+    user_subscriptions = ['restaurants','gym']
+    false_attributes = ['wrong','attributes']
     username = 'test'
     sk,pk = Server.generate_ca(attributes)    
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         # This test asserts that a Runtime error will be raised
         issue_request,private_state = Client().prepare_registration(pk,username,user_subscriptions)
-        server_response = Server().process_registration(sk,issue_request,false_attributes)
+        server_response = Server().process_registration(sk,pk,issue_request,username,false_attributes)
 
 
 test_generate_ca()   

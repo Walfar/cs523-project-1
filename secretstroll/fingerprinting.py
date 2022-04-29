@@ -107,7 +107,6 @@ def load_data():
     for file in os.listdir("pcaps"):
 
         cell_id = 0
-        print(file)
 
         packets = rdpcap("pcaps/"+file)
 
@@ -117,7 +116,6 @@ def load_data():
                 i = pkt[TCP].load.decode('utf-8').find("cell_id")
                 if i != -1:
                     cell_id = re.search(r'\d+',pkt[TCP].load.decode('utf-8')[i:]).group()
-                    #print(cell_id)
                     break    
 
         bytes_list = list()
@@ -140,8 +138,6 @@ def load_data():
     ###############################################
     # TODO: Complete this function. 
     ###############################################
-    print(len(labels))
-    print(len(features))
     return features, labels
         
 def main():

@@ -28,32 +28,28 @@ def verify_pk_changed() :
     assert not verify(pk1,signature,msgs)
 
 def verify_create_issue() :
-      attributes = ['email','location','credential','age']
-      att_and_username = attributes.copy()
-      att_and_username.append('maxton')
-      print(attributes)
-      print(att_and_username)
+      attributes = ['email','location','credential','age','username']
       subscription = ['email','location']
       
       
       msg = '(42,32)'.encode('utf-8')
        
-      sk,pk = generate_key(att_and_username) # keys of the issuer 
-      server_pk = (pk,['email','location','credential','age','username'])
-      user_index = [0,1,4]
-      issuer_index = [2,3]
+      sk,pk = generate_key(attributes) # keys of the issuer 
+      server_pk = (pk,attributes)
+      user_index = [4]
+      issuer_index = [0,1]
 
       print(user_index)
       print(issuer_index)
-
+      attributes = ['email','location','credential','age','maxime']
       user_attributes_dict = {}
       issuer_attributes_dict = {}
       for i in user_index : 
           print(i)
-          user_attributes_dict[pk[i+1]] = att_and_username[i]
+          user_attributes_dict[pk[i+1]] = attributes[i]
       
       for i in issuer_index :
-          issuer_attributes_dict[pk[i+1]] = att_and_username[i]
+          issuer_attributes_dict[pk[i+1]] = attributes[i]
       
       request,state = create_issue_request(server_pk,user_attributes_dict)
       response = sign_issue_request(sk,server_pk,request,issuer_attributes_dict)
