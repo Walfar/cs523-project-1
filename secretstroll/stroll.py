@@ -159,6 +159,9 @@ class Client:
         attributes = server_pk_unserialized[1]
         pk = server_pk_unserialized[0]
         Ys = pk[1:len(attributes)+1]
+        for sub in subscriptions:
+            if sub not in attributes:
+                raise RuntimeError("Subscription is not valid ")
         # Construct dictionary of user attributes where each Yi is mapped to the corresponding subscription 
         user_attributes = {}
         for sub in subscriptions:
@@ -214,11 +217,10 @@ class Client:
             A message's signature (serialized)
         """
         credentials_unserialized = jsonpickle.decode(credentials)
-        print(credentials_unserialized)
-
+        
         for type in types:
             if type not in credentials_unserialized[1]:
-                print(type)
+                
                 raise RuntimeError("Attributes are not in the credential")
 
         server_pk_unserialized = jsonpickle.decode(server_pk)

@@ -206,19 +206,16 @@ def obtain_credential(
     This corresponds to the "Unblinding signature" step.
     """
     attributes = server_pk[1]
+    issuer_attributes = response[1]
+    subscriptions = list(issuer_attributes.values())
 
     t = state[0]
     username = list(state[1].values()).pop()
-    print(username)
+    print("In obtain credential username : " + username)
+    subscriptions.append(username)
 
-
-    msgs = {}
-    for i in range(len(attributes)):
-        msgs[i] = bytes(attributes[i], 'utf-8')
-    msgs[len(attributes)] = bytes(username, 'utf-8')
     signature = (response[0][0], response[0][1]/(response[0][0]**t))
-    attributes[len(attributes)-1] = username
-    return signature, attributes
+    return signature, subscriptions
     
 
 ## SHOWING PROTOCOL ##
@@ -230,22 +227,31 @@ def create_disclosure_proof(
         message: bytes
     ) -> DisclosureProof:
     credentials = credential[1]
-    L = len(credentials)
+    print(credentials)
+    all_attributes = server_pk[1]
+    L = len(all_attributes)
+    all_attributes[L-1] =credentials[-1]
     pk = server_pk[0]
     """ Create a disclosure proof """
     r = G1.order().random()
     t = G1.order().random()
     g_tilda = pk[L+1]
     signature = (credential[0][0]**r, ((credential[0][0]**t)*credential[0][1])**r)
-    disclosed_attributes_idx = [credentials.index(attr)+1 for attr in disclosed_attributes]
-    hidden_attributes_idx = [credentials.index(attr)+1 for attr in credentials if attr not in disclosed_attributes]
+    disclosed_attributes_idx = [all_attributes.index(attr)+1 for attr in disclosed_attributes]
+    hidden_attributes_idx = [all_attributes.index(attr)+1 for attr in credentials if attr not in disclosed_attributes]
+    print("Les indexes dans disclosure proof")
+    print ("disclosed attr idx : " )
+    print(disclosed_attributes_idx)
+    print("hidden attr idx : " )
+    print( hidden_attributes_idx)
 
     disclosed_attributes_val = [Bn.from_binary(bytes(attr,'utf-8')) for attr in disclosed_attributes]
     hidden_attributes_val = [Bn.from_binary(bytes(attr,'utf-8')) for attr in credentials if attr not in disclosed_attributes]
 
     disclosed_attributes_dict = dict(zip(disclosed_attributes_idx,disclosed_attributes_val))
     hidden_attributes_dict = dict(zip(hidden_attributes_idx,hidden_attributes_val))
-    # Left side of equation 
+
+    # Right side of equation 
 
     C = signature[0].pair(g_tilda)**t
     for i in hidden_attributes_dict:
@@ -270,7 +276,7 @@ def create_disclosure_proof(
     for i in range(len(hidden_attributes_idx)) :
         s.append((random[i].mod_sub(c *hidden_attributes_val[i], G1.order()))) 
     pi = (C,c,s) # proof that the signature is valid
-    return signature,disclosed_attributes_dict,pi
+    return signature,disclosed_attributes_dict,hidden_attributes_idx,pi
 
 def verify_disclosure_proof(
         server_pk: PublicKey,
@@ -283,8 +289,8 @@ def verify_disclosure_proof(
 
     g_tilda = pk[L+1]
     disclosed_attributes_dict = disclosure_proof[1]
-
-    pi = disclosure_proof[2]
+    hidden_attributes_idx = disclosure_proof[2]
+    pi = disclosure_proof[3]
     C = pi[0]
     c = pi[1]
     s = pi[2]
@@ -294,6 +300,7 @@ def verify_disclosure_proof(
     """
 
     C_prime = signature[1].pair(g_tilda) / signature[0].pair(X_tilda)
+    print("Les attributs disclosed")
     print(disclosed_attributes_dict)
     for i in disclosed_attributes_dict:
         C_prime *= signature[0].pair(pk[L+2+1]) ** (-disclosed_attributes_dict[i] % G1.order())
@@ -301,9 +308,10 @@ def verify_disclosure_proof(
     if C_prime == C:
         print("success")
     else:
-        print("fail")  
+        print("fail, les grand C pas les memes")  
 
-    hidden_attributes_idx = [i for i in range(1,L+1) if i not in list(disclosed_attributes_dict.keys())]
+    print("Les indexes des hidden")
+    print(hidden_attributes_idx)
 
     if signature[0] == G1.unity():
         print("unity")
@@ -311,9 +319,10 @@ def verify_disclosure_proof(
     R_prime = (C** c) *  (signature[0].pair(g_tilda) ** s[0])
     index = 1
     for i in hidden_attributes_idx:
+        print( "indexes des hidden : " )
         print(i)
         R_prime *= signature[0].pair(pk[L+2+i])**s[index]    
-        index += 1  
+        index += 1    
      # derive c prime 
     c_prime = hashlib.sha256(jsonpickle.encode(pk).encode())
     c_prime.update(jsonpickle.encode(C).encode())
