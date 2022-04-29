@@ -1,4 +1,5 @@
 
+from cProfile import label
 import numpy as np
 
 
@@ -58,8 +59,8 @@ def perform_crossval(features, labels, folds=10):
     labels = np.array(labels)
     features = np.array(features)
 
-    y_true = np.array()
-    y_pred = np.array()
+    y_true = np.array([])
+    y_pred = np.array([])
     for train_index, test_index in kf.split(features, labels):
         X_train, X_test = features[train_index], features[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
@@ -99,44 +100,48 @@ def load_data():
     Note: You will have to decide what features/labels you want to use and implement 
     feature extraction on your own.
     """
-    feature_selection = {}
-    for n in range(1,101) :
-        feature_selection[n] = []
+    features = []
+    labels = []
 
-    for dir in os.listdir("pcaps") :
-        for file in os.listdir(dir) :
-            packets = rdpcap("pcaps/"+dir+"/"+file)
-            for pkt in packets :
-                if pkt[TCP].payload:
-                    i = pkt[TCP].load.decode('uft8').find("cell_id=")
-                    if i != 1 :
-                        cell_id = re.search(r'\d',pkt[TCP].load.decode('uft8')[i:]).group()
-            
-            bytes_list = list()
 
-            for pkt in packets : 
-                pkt[TCP].remove_payload()
-                header_length = len(raw(pkt))
-                if  header_length == 56 :
-                    for b in raw(pkt) : 
-                        bytes_list.append(str(b))
-                if len(bytes_list) > 25200 :
-                    bytes_list = bytes_list[:25200]
-                if(len(bytes_list) == 25200) :
-                    feature_selection[cell_id].append(bytes_list)
+    for file in os.listdir("pcaps"):
+
+        cell_id = 0
+        print(file)
+
+        packets = rdpcap("pcaps/"+file)
+
+        for pkt in packets:
+            if pkt[TCP].payload:
+                #Look for the cell id
+                i = pkt[TCP].load.decode('utf-8').find("cell_id")
+                if i != -1:
+                    cell_id = re.search(r'\d+',pkt[TCP].load.decode('utf-8')[i:]).group()
+                    #print(cell_id)
+                    break    
+
+        bytes_list = list()
+
+        for pkt in packets : 
+            pkt[TCP].remove_payload()
+            header_length = len(raw(pkt))
+            if  header_length == 66 :
+                for b in raw(pkt) : 
+                     bytes_list.append(b)
+        if len(bytes_list) > 10 :
+            bytes_list = bytes_list[:10000]
+
+        if(len(bytes_list) == 10000) :
+            labels.append(cell_id)
+            features.append(bytes_list)
 
                          
 
     ###############################################
     # TODO: Complete this function. 
     ###############################################
-
-    features = []
-    labels = []
-    for (grid_id,bytes_features) in feature_selection :
-        features.append(bytes_features)
-        labels.append(grid_id)
-
+    print(len(labels))
+    print(len(features))
     return features, labels
         
 def main():
@@ -149,7 +154,7 @@ def main():
     """
 
     features, labels = load_data()
-    perform_crossval(features, labels, folds=10)
+    perform_crossval(features, labels, folds=1)
     
 if __name__ == "__main__":
     try:
