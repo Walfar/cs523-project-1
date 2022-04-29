@@ -20,4 +20,4 @@ for i in {1..100}
     python3 client.py grid -p key-client.pub -c attr.cred -r '' -T 'restaurant' -t $i > /dev/null
     sleep 1
     kill "$!"   # kills the background process
-  done
+  donegit config --global --add safe.directory /home/maxime/cs523-project-1

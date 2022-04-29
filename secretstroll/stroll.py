@@ -214,9 +214,11 @@ class Client:
             A message's signature (serialized)
         """
         credentials_unserialized = jsonpickle.decode(credentials)
+        print(credentials_unserialized)
 
         for type in types:
             if type not in credentials_unserialized[1]:
+                print(type)
                 raise RuntimeError("Attributes are not in the credential")
 
         server_pk_unserialized = jsonpickle.decode(server_pk)
