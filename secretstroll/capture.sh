@@ -6,18 +6,22 @@
 
 # Create the directory if it does not already exist.
 #-$(date +'%m-%d-%y_%T')
-[ -d pcaps/query-$1 ] || mkdir -pv pcaps/query-$1
 
+for quer in {1..5}
+   do
+   echo query $quer
+   [ -d pcaps/query-$quer ] || mkdir -pv pcaps/query-$quer
+   for i in {1..100}
+    do
+      echo grid $i
+      # Create the file name.
+      fname="grid-$i"
+      tcpdump -i lo 'port 9050' -w pcaps/query-$quer/$fname.pcap & #port 9050 is used for Tor
+      sleep 0.1
+      python3 client.py grid -p key-client.pub -c anon.cred  -T 'restaurant' -t $i > /dev/null
+      sleep 1
+      kill "$!"   # kills the background process
+    done
 
-for i in {1..100}
-  do
-    echo i
-    echo $i
-    # Create the file name.
-    fname="grid-$i"
-    tcpdump -i lo 'port 9050' -w pcaps/query-$1/$fname.pcap &
-    sleep 0.1
-    python3 client.py grid -p key-client.pub -c attr.cred -r '' -T 'restaurant' -t $i > /dev/null
-    sleep 1
-    kill "$!"   # kills the background process
-  donegit config --global --add safe.directory /home/maxime/cs523-project-1
+   done 
+

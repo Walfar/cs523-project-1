@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-{"py/tuple": [{"py/tuple": [{"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AgXvN+tEyP/GwrPiEEs4HEt96iOMrVqyOLIrSBzjWGJWLZ1MFdRcX+Deyn8WqHSsPw=="}, {"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AwbMmNvG44wLK15Jbx295Ph7T7DdCZxSFjeqb6JJHJNHR5q8lByLWbOFwR45pgXmKA=="}]}, ["restaurant", "bar", "dojo", "your_name"]]}
-=======
-{"py/tuple": [{"py/tuple": [{"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AhhcsTT8CslpFRmNkJUQSnBG71fYoGEwCBe6lWcTxRGsglk0COUT1QY0IirQdP0NYg=="}, {"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AwMXB2SabPkPkdeaLPApC5CDyu+m/teMp2eAodoGXnMafJgs9caoRNdcH6tknnkLeg=="}]}, ["restaurant", "bar", "dojo", "your_name"]]}
->>>>>>> b5701dc6f70d173d8bde9b9b22099a9104eff285
+{"py/tuple": [{"py/tuple": [{"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AxiU4f/EFkXIDJ3QsKjDuAo4pb4hUDDuDcuUNIhXUwvw2Evred6XBsknZeIice/Jtw=="}, {"py/object": "petrelic.multiplicative.pairing.G1Element", "b64repr": "AgdO7g6gPSDjgwgJ/9pT+VQ3k8RfubdAwDLTEM8OLcOfTJjN6GOfFExxZUCYBxHQHQ=="}]}, ["restaurant", "bar", "dojo", "your_name"]]}
