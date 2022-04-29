@@ -1,11 +1,15 @@
+
 import numpy as np
+
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 from scapy.all import *
-import os 
+import numpy as np
+import os
+import re
 import sys
 
 
@@ -13,7 +17,6 @@ def classify(train_features, train_labels, test_features, test_labels):
 
     """Function to perform classification, using a 
     Random Forest. 
-
     Reference: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     
     Args:
@@ -21,10 +24,8 @@ def classify(train_features, train_labels, test_features, test_labels):
         train_labels (numpy array): list of labels used to train the classifier
         test_features (numpy array): list of features used to test the classifier
         test_labels (numpy array): list of labels (ground truth) of the test dataset
-
     Returns:
         predictions: list of labels predicted by the classifier for test_features
-
     Note: You are free to make changes the parameters of the RandomForestClassifier().
     """
 
@@ -49,7 +50,6 @@ def perform_crossval(features, labels, folds=10):
     
     This function splits the data into training and test sets. It feeds
     the sets into the classify() function for each fold. 
-
     You need to use the data returned by classify() over all folds 
     to evaluate the performance.         
     """
@@ -79,7 +79,6 @@ def perform_crossval(features, labels, folds=10):
 def load_data():
 
     """Function to load data that will be used for classification.
-
     Args:
         You can provide the args you want.
     Returns:
@@ -94,12 +93,9 @@ def load_data():
     .
     .
     features_traceN = [fN1, fN2, ...]
-
     Your inputs to the classifier will be:
-
     features = [features_trace1, ..., features_traceN]
     labels = [1, ..., N]
-
     Note: You will have to decide what features/labels you want to use and implement 
     feature extraction on your own.
     """
@@ -149,7 +145,6 @@ def main():
     This skeleton provides the code to perform classification 
     using a Random Forest classifier. You are free to modify the 
     provided functions as you wish.
-
     Read about random forests: https://towardsdatascience.com/understanding-random-forest-58381e0602d2
     """
 
