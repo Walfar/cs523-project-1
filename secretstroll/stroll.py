@@ -79,14 +79,11 @@ class Server:
                 raise RuntimeError("A subscription is not valid")          
 
         attributes = server_pk_unserialized[1]
-        # Use all attributes + username as issuer attributes
+        # Use all subscriptions as issuer attributes
         Ys = server_pk_unserialized[0][1:len(attributes)+1]
         issuer_attributes = {}
-        for attr in attributes[:len(attributes)-1]:
-            if attr not in subscriptions:
-                issuer_attributes[Ys[attributes.index(attr)]] = attr    
-        print("issuer attributes is")
-        print(issuer_attributes)        
+        for attr in subscriptions:
+                issuer_attributes[Ys[attributes.index(attr)]] = attr        
 
         response = sign_issue_request(server_sk_unserialized, server_pk_unserialized, issuance_request_unserialized, issuer_attributes)
         return jsonpickle.encode(response).encode()
@@ -117,9 +114,7 @@ class Server:
             if attr not in server_pk_unserialized[1]:
                 raise RuntimeError("Revealed attributes are not valid")  
         
-        bool = verify_disclosure_proof(server_pk_unserialized, signature_unserialized, message)
-        print(bool)
-        return True   
+        return verify_disclosure_proof(server_pk_unserialized, signature_unserialized, message)
 
 
 
@@ -158,13 +153,10 @@ class Client:
         server_pk_unserialized = jsonpickle.decode(server_pk)
         attributes = server_pk_unserialized[1]
         pk = server_pk_unserialized[0]
-        Ys = pk[1:len(attributes)+1]
-        # Construct dictionary of user attributes where each Yi is mapped to the corresponding subscription 
+
+        # Construct dictionary of user attributes (containing only username)
         user_attributes = {}
-        for sub in subscriptions:
-            Yi = Ys[attributes.index(sub)]
-            user_attributes[Yi] = sub
-        user_attributes[Ys[len(attributes)-1]] = username    
+        user_attributes[pk[len(attributes)]] = username 
         # Use t as the state
         issue_request, state = create_issue_request(server_pk_unserialized, user_attributes)
         return jsonpickle.encode(issue_request, keys=True).encode(), state
@@ -214,11 +206,9 @@ class Client:
             A message's signature (serialized)
         """
         credentials_unserialized = jsonpickle.decode(credentials)
-        print(credentials_unserialized)
 
         for type in types:
             if type not in credentials_unserialized[1]:
-                print(type)
                 raise RuntimeError("Attributes are not in the credential")
 
         server_pk_unserialized = jsonpickle.decode(server_pk)

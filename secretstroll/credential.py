@@ -74,6 +74,7 @@ def generate_key(
     return sk, pk
 
 
+## Those methodes are only examples of the sign/verifiy process and are not used in the ABC implementation
 
 def sign(
         sk: SecretKey,
@@ -205,20 +206,15 @@ def obtain_credential(
 
     This corresponds to the "Unblinding signature" step.
     """
-    attributes = server_pk[1]
+    credentials = list(response[1].values())
 
     t = state[0]
     username = list(state[1].values()).pop()
     print(username)
 
-
-    msgs = {}
-    for i in range(len(attributes)):
-        msgs[i] = bytes(attributes[i], 'utf-8')
-    msgs[len(attributes)] = bytes(username, 'utf-8')
     signature = (response[0][0], response[0][1]/(response[0][0]**t))
-    attributes[len(attributes)-1] = username
-    return signature, attributes
+    credentials.append(username)
+    return signature, credentials
     
 
 ## SHOWING PROTOCOL ##
@@ -258,7 +254,7 @@ def create_disclosure_proof(
     for i in hidden_attributes_dict :
         rai = G1.order().random()
         random.append(rai)
-        R *= signature[0].pair(pk[L+2+i])**hidden_attributes_dict[i]  
+        R *= signature[0].pair(pk[L+2+i])**rai 
     # derive c = challenge
     c = hashlib.sha256(jsonpickle.encode(pk).encode())
     c.update(jsonpickle.encode(C).encode())
@@ -297,11 +293,6 @@ def verify_disclosure_proof(
     print(disclosed_attributes_dict)
     for i in disclosed_attributes_dict:
         C_prime *= signature[0].pair(pk[L+2+1]) ** (-disclosed_attributes_dict[i] % G1.order())
-
-    if C_prime == C:
-        print("success")
-    else:
-        print("fail")  
 
     hidden_attributes_idx = [i for i in range(1,L+1) if i not in list(disclosed_attributes_dict.keys())]
 
