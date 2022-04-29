@@ -1,10 +1,16 @@
+from email.base64mime import header_length
 import numpy as np
+from sklearn import feature_selection
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 from scapy.all import *
+import numpy as np
+import os
+import re
+import sys
 
 
 def classify(train_features, train_labels, test_features, test_labels):
@@ -101,6 +107,32 @@ def load_data():
     Note: You will have to decide what features/labels you want to use and implement 
     feature extraction on your own.
     """
+    feature_selection = {}
+    for n in range(1,101) :
+        feature_selection[n] = []
+
+    for dir in os.listdir("pcaps") :
+        for file in os.listdir(dir) :
+            packets = rdpcap("pcaps/"+dir+"/"+file)
+            for pkt in packets :
+                if pkt[TCP].payload:
+                    i = pkt[TCP].load.decode('uft8').find("cell_id=")
+                    if i != 1 :
+                        cell_id = re.search(r'\d',pkt[TCP].load.decode('uft8')[i:]).group()
+            
+            bytes_list = list()
+
+            for pkt in packets : 
+                pkt[TCP].remove_payload()
+                header_length = len(raw(pkt))
+                if  header_length == 56 :
+                    for b in raw(pkt) : 
+                        bytes_list.append(str(b))
+                if len(bytes_list) > 25200 :
+                    bytes_list = bytes_list[:25200]
+                feature_selection[cell_id].append(bytes_list)
+                
+    return feature_selection 
 
     ###############################################
     # TODO: Complete this function. 
