@@ -7,6 +7,7 @@ from stroll import *
 from credential import *
 import petrelic.multiplicative.pairing
 from serialization import jsonpickle
+import time
 
 def test_generate_ca() :
     attributes = ['foot','tennis','spa','epfl','username']
@@ -98,6 +99,7 @@ def test_uncorrect_credential() :
 
     
 def test_subscribed_all() :
+    start_time = time.time()
     attributes = ['restaurants','gym','dojo','bar','username']
     user_subscription = attributes[:-1]
     username = 'test'
@@ -108,11 +110,11 @@ def test_subscribed_all() :
     issue_request,private_state = Client().prepare_registration(pk,username,user_subscription)
     server_response = Server().process_registration(sk,pk,issue_request,username,user_subscription)
     credential = Client().process_registration_response(pk,server_response,private_state)
-
+    print("--- issuing credentials was done in %s seconds ---" % (time.time() - start_time))
     # Signature for request with disclosed attributes being empty
     signature = Client().sign_request(pk,credential,message,disclosed_attributes)
     assert(Server().check_request_signature(pk,message,disclosed_attributes,signature))  
-
+    print("--- showing credentials was done in %s seconds ---" % (time.time() - start_time))
 
 def test_wrong_attributes1() : 
     attributes = ['restaurants','gym','dojo','bar','username']
@@ -135,10 +137,13 @@ def test_wrong_attributes2() :
         server_response = Server().process_registration(sk,pk,issue_request,username,false_attributes)
 
 
+start_time = time.time()
 test_generate_ca()   
+print("--- key generation was done in %s seconds ---" % (time.time() - start_time))
+
 test_credentials_difference()     
 test_correct_credential()
-test_subscribed_all()
+test_subscribed_all()  
 test_wrong_attributes1()
 test_wrong_attributes2()
 test_uncorrect_credential()

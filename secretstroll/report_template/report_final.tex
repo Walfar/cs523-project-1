@@ -24,7 +24,7 @@
 
 The first step of the Attribute based credential authentication is the issuance of the credentials. To do so, we decided that the user's attributes would be his username, whereas the issuer's attributes would be all the subscriptions the user sends to it. This way, we have the union of both subsets as the whole set of all the user's attributes. As a specification of implementation, we decided to create dictionaries for the user and issuer attributes that map $Y_{i}$ to the corresponding $a_{i}$. All $Y_{i}$ are computed by the server when generating the keys, and they are stored in the public key at the index corresponding to each attribute, the last one being the username. We also stored all the attributes in the public key, as it is easier for some methods to access attribute and retrieve indexes based on the size. 
 This way, if a method needs the $Y_{i}$ of a given attribute, it can simply search for the index i of the attribute in the pk and get the value at index i+1 (since g is the first value stored in the pk).
-When creating the issue request, the user sends a commitment C to the issuer, as well as a challenge c (which is a sha256 hash $H(pk,C,R)$), and a pre-computed response s. Since it is the user that computes the response, the proof is non-interactive, meaning that the issuer doesn't have to do anything except verifying that the challenge he receives was correctly computed, hence proving that the user really has the attributes. Since the issuer doesn't have the user's attributes, it can't compute $C = g^t \prod_{i e U}{Y_{i}^{a_{i}}}$ . 
+When creating the issue request, following a Fiat-Schemir heurisitc, the user sends a commitment C to the issuer, as well as a challenge c (which is a sha256 hash $H(pk,C,R)$), and a pre-computed response s. Since it is the user that computes the response, the proof is non-interactive, meaning that the issuer doesn't have to do anything except verifying that the challenge he receives was correctly computed, hence proving that the user really has the attributes. Since the issuer doesn't have the user's attributes, it can't compute $C = g^t \prod_{i e U}{Y_{i}^{a_{i}}}$ . 
 But, it can compute R'. 
 \\	
 \hspace{1cm}
@@ -40,17 +40,15 @@ To prove that the user has the right credentials, we use a similar method as the
 \\	
 \hspace{1cm}
 
-Whereas the server computes \\ $ R = C^c  e(sigma_{1}',g^{tilda})^{st} \prod_{i e H} e(sigma_{1}',Y_{i}^{tilda})^{sa_{i}}$. Once again, the obtained value hashed together with C and pk should be equal to the challenge c. If this is the case, than the user has correctly proved that he has the credentials, without having to show them to the server. 
+Whereas the server computes \\ $ R = C^c  e(sigma_{1}',g^{tilda})^{st} \prod_{i e H} e(sigma_{1}',Y_{i}^{tilda})^{sa_{i}}$. This time, the attributes are the credentials kept hidden by the user. There is a way to compute C when knowing the disclosed attributes according to the equation given in the handout, but it seemed easier to just use the commitment sent by the user. Once again, the obtained value hashed together with C and pk should be equal to the challenge c. If this is the case, than the user has correctly proved that he has the credentials, without having to show them to the server. 
 
 
-\subsection{Test}d
-How did you test the system?
-You need to test the correct path and at least two failure paths.
+\subsection{Test}
+To test the system, we tried multiple basic cases situations by running a client and the server on docker. Following the README, we were able to test that a client could successfully get his credentials, and ask for nearby POIs. We also added tests in the file test.py that basically test that the key generation is as expected, that two users with the same set of initial attributes (same subscriptions) will get different credentials, that the signature is well checked (accepted/refused when it is supposed to be), that users can't issue credentials if they have wrong attributes. We tested the credentials.py methods individually in the file credentialtests.py.
 
-\subsection{Evaluation}
-Evaluate your ABC: report communication and computation stats (mean and standard
-deviation). Report statistic on key generation, issuance, signing, and
-verification.
+\subsection{Performance Evaluation}
+For the performance evaluation, we added time check at the beginning and end of the full tests.
+The key generation test was executed in average 0.004 seconds, the issuance of the credentials in 0.008 seconds and the showing the credentials in 0.04 seconds. This is not completely representative as in a real-life situation, there is also the delay of sending the packets through the network. We can still notice that showing credentials takes 5 times more time than issuing them, although both use signatures and non-interactive zero-knowledge proofs. This can be explained by the fact that we create a lot of different data structures such as dictionaries that can take computational time. A way to optimize this would then be to create less data structures and relie more on the already existent ones.
 
 \section{(De)Anonymization of User Trajectories}
 

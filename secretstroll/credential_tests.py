@@ -39,13 +39,10 @@ def verify_create_issue() :
       user_index = [4]
       issuer_index = [0,1]
 
-      print(user_index)
-      print(issuer_index)
       attributes = ['email','location','credential','age','maxime']
       user_attributes_dict = {}
       issuer_attributes_dict = {}
       for i in user_index : 
-          print(i)
           user_attributes_dict[pk[i+1]] = attributes[i]
       
       for i in issuer_index :

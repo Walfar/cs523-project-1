@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2022.4.29)  29 APR 2022 21:49
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/Debian) (preloaded format=pdflatex 2022.4.29)  29 APR 2022 23:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -543,31 +543,31 @@ Underfull \hbox (badness 10000) in paragraph at lines 39--42
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 58--64
+Underfull \hbox (badness 10000) in paragraph at lines 56--62
 
  []
 
-<target_activities.png, id=52, 538.01pt x 216.81pt>
-File: target_activities.png Graphic file (type png)
-<use target_activities.png>
-Package pdftex.def Info: target_activities.png  used on input line 65.
-(pdftex.def)             Requested size: 242.10226pt x 97.56358pt.
-<target_places_to_eat.png, id=54, 530.98375pt x 216.81pt>
-File: target_places_to_eat.png Graphic file (type png)
-<use target_places_to_eat.png>
-Package pdftex.def Info: target_places_to_eat.png  used on input line 66.
-(pdftex.def)             Requested size: 238.94048pt x 97.56358pt.
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
 ]
+<target_activities.png, id=67, 538.01pt x 216.81pt>
+File: target_activities.png Graphic file (type png)
+<use target_activities.png>
+Package pdftex.def Info: target_activities.png  used on input line 63.
+(pdftex.def)             Requested size: 242.10226pt x 97.56358pt.
+<target_places_to_eat.png, id=69, 530.98375pt x 216.81pt>
+File: target_places_to_eat.png Graphic file (type png)
+<use target_places_to_eat.png>
+Package pdftex.def Info: target_places_to_eat.png  used on input line 64.
+(pdftex.def)             Requested size: 238.94048pt x 97.56358pt.
 <target_activities_defense.png, id=70, 538.01pt x 216.81pt>
 File: target_activities_defense.png Graphic file (type png)
 <use target_activities_defense.png>
-Package pdftex.def Info: target_activities_defense.png  used on input line 76.
+Package pdftex.def Info: target_activities_defense.png  used on input line 74.
 (pdftex.def)             Requested size: 269.00433pt x 108.40472pt.
 
-Overfull \hbox (27.00433pt too wide) in paragraph at lines 76--77
+Overfull \hbox (27.00433pt too wide) in paragraph at lines 74--75
 [][] 
  []
 
@@ -586,16 +586,16 @@ Before submitting the final camera ready copy, remember to:
 [2 <./target_activities.png> <./target_places_to_eat.png> <./target_activities_
 defense.png>] (./report_final.aux)
 Package rerunfilecheck Info: File `report_final.out' has not changed.
-(rerunfilecheck)             Checksum: 8FFE589AAA86985C19E299A4C3E1E91A;798.
+(rerunfilecheck)             Checksum: 79ACA8AE9E17BB3F461A4ED00ACB2DCE;810.
  ) 
 Here is how much of TeX's memory you used:
  8711 strings out of 481209
  141064 string characters out of 5914747
- 466068 words of memory out of 5000000
+ 468068 words of memory out of 5000000
  25522 multiletter control sequences out of 15000+600000
  431048 words of font info for 75 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
- 71i,8n,79p,1094b,324s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 71i,8n,79p,1094b,326s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist
@@ -606,7 +606,7 @@ msfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cms
 y7.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on report_final.pdf (2 pages, 116907 bytes).
+Output written on report_final.pdf (2 pages, 118271 bytes).
 PDF statistics:
  117 PDF objects out of 1000 (max. 8388607)
  96 compressed objects within 1 object stream
