@@ -65,11 +65,12 @@ def generate_key(
     pk.append(g_ ** x) 
     for y in ys:
         pk.append(g_ ** y)
-    """ generate sk """    
+    """ generate sk """   
+     
     sk.append(x)     
     sk.append(g ** x)   
     for y in ys:
-        sk.append(y)        
+        sk.append(y)           
     return sk, pk
 
 
