@@ -130,9 +130,10 @@ def load_data():
                         bytes_list.append(str(b))
                 if len(bytes_list) > 25200 :
                     bytes_list = bytes_list[:25200]
-                feature_selection[cell_id].append(bytes_list)
-                
-    return feature_selection 
+                if(len(bytes_list) == 25200) :
+                    feature_selection[cell_id].append(bytes_list)
+
+                         
 
     ###############################################
     # TODO: Complete this function. 
@@ -140,6 +141,9 @@ def load_data():
 
     features = []
     labels = []
+    for (grid_id,bytes_features) in feature_selection :
+        features.append(bytes_features)
+        labels.append(grid_id)
 
     return features, labels
         
